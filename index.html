@@ -275,84 +275,56 @@
 </body>
 </html>
 
-
-<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Simulador Radio Escuchas Contorno Rosa</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
-
-  body, html {
-    margin: 0; padding: 0;
-    height: 100vh;
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+<!-- Contador LED con contorno rosa y texto -->
+<div id="contador-container" aria-label="Contador de radio escuchas" style="position: fixed; bottom: -130px; left: 50%; transform: translateX(-50%); text-align: center; pointer-events: none; z-index: 99999; background: transparent;">
+  <div style="
     font-family: 'Orbitron', monospace;
-    user-select: none;
-  }
-
-  .letrero {
-    font-size: 2.5rem;
-    color: #ffffff;
-    margin-bottom: 15px;
-    letter-spacing: 0.15em;
     font-weight: 900;
-    user-select: none;
+    font-size: 1.8rem;
+    color: white;
     text-shadow:
       -1px -1px 0 #ff00ff,
       1px -1px 0 #ff00ff,
       -1px 1px 0 #ff00ff,
       1px 1px 0 #ff00ff;
-  }
-
-  .contador-led {
-    color: #ffffff;
-    font-size: 6rem;
-    letter-spacing: 0.25em;
-    font-weight: 900;
-    text-align: center;
-    min-width: 320px;
+    margin-bottom: 5px;
     user-select: none;
+  ">RADIO ESCUCHAS</div>
+  <div id="contadorLed" style="
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 3.5rem;
+    color: white;
+    letter-spacing: 0.25em;
     text-shadow:
       -2px -2px 0 #ff00ff,
       2px -2px 0 #ff00ff,
       -2px 2px 0 #ff00ff,
       2px 2px 0 #ff00ff;
+    user-select: none;
+  ">0000</div>
+</div>
+
+<script>
+  // Asegúrate de cargar la fuente Orbitron para los números:
+  const linkOrbitron = document.createElement('link');
+  linkOrbitron.href = 'https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap';
+  linkOrbitron.rel = 'stylesheet';
+  document.head.appendChild(linkOrbitron);
+
+  const contador = document.getElementById('contadorLed');
+  let valor = 0;
+
+  function formatearNumero(num, length) {
+    return num.toString().padStart(length, '0');
   }
-</style>
-</head>
-<body>
 
-  <div class="letrero" aria-label="Radio escuchas">RADIO ESCUCHAS</div>
-  <div class="contador-led" id="contadorLed" aria-live="polite" aria-label="Número de usuarios escuchando la radio">0000</div>
+  function actualizarConteo() {
+    valor += Math.floor(Math.random() * 6);
+    if (valor > 9999) valor = Math.floor(Math.random() * 3000) + 2000;
+    contador.textContent = formatearNumero(valor, 4);
+  }
 
-  <script>
-    const contador = document.getElementById('contadorLed');
-
-    let valor = 0;
-
-    function formatearNumero(num, length) {
-      return num.toString().padStart(length, '0');
-    }
-
-    function actualizarConteo() {
-      valor += Math.floor(Math.random() * 6);
-      if (valor > 9999) valor = Math.floor(Math.random() * 3000) + 2000;
-      contador.textContent = formatearNumero(valor, 4);
-    }
-
-    setInterval(actualizarConteo, 1000);
-  </script>
-
-</body>
-</html>
-
-
-
+  setInterval(actualizarConteo, 1000);
+</script>
 
