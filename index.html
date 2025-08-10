@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Player profesional - Radio Minutos Con Dios</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root{
+      --eq-color-start: #7afcff;
+      --eq-color-end: #5b5bdc;
+      --text: #ffffff;
+      --ui-bg: rgba(0,0,0,0.35);
+      --player-radius: 18px;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      margin:0; height:100%; background: linear-gradient(90deg, #050087, #0A0257);color: var(--text);
+      font-family: Montserrat, system-ui, Arial, sans-serif;
+      display:flex; flex-direction: column; align-items: center; justify-content: center;
+      user-select:none;
+      transition: background-image 0.5s ease;
+      background-size: cover;
+      background-position: center;
+    }
+    .player {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.22));
+      border-radius: var(--player-radius);
+      box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+      border: 1px solid rgba(255,255,255,0.04);
+      width: 360px;
+      padding: 16px 20px 28px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    h1 {
+      margin: 0 0 12px 0;
+      font-weight: 700;
+      font-size: 22px;
+      text-align: center;
+      user-select:none;
+    }
+    .logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: linear-gradient(180deg,#222,#111);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 8px;
+      user-select:none;
+    }
+    .logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .controls {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      width: 100%;
+    }
+    button.control {
+      background: var(--ui-bg);
+      border: none;
+      color: var(--text);
+      padding: 12px 18px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 20px;
+      transition: transform 0.1s ease;
+      user-select:none;
+    }
+    button.control:active {
+      transform: translateY(2px);
+    }
+    .bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      height: 120px;
+      width: 100%;
+    }
+    .bar {
+      background: linear-gradient(180deg, var(--eq-color-start), var(--eq-color-end));
+      border-radius: 6px;
+      width: 6px;
+      height: 6px;
+      transform-origin: bottom;
+      transition: height 0.06s linear;
+    }
+    audio {
+      display:none;
+    }
+    .bg-input {
+      margin-top: 20px;
+      display: flex;
+      gap: 8px;
+      width: 360px;
+    }
+    .bg-input input {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: transparent;
+      color: var(--text);
+      font-size: 14px;
+    }
+    .bg-input button {
+      padding: 10px 16px;
+      border-radius: 8px;
+      border: none;
+      background: var(--ui-bg);
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+      user-select:none;
+      transition: background-color 0.3s ease;
+    }
+    .bg-input button:hover {
+      background: #1e90ff;
+    }
+    @media(max-width:400px){
+      .player, .bg-input {
+        width: 90vw;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="player" role="application" aria-label="Reproductor de radio profesional">
+    <div class="logo" aria-label="Logo de la radio">
+      <img id="logoImg" src="https://i.postimg.cc/59psFVS2/Photo-1754792391420.png" alt="Logo Radio" />
+    </div>
+    <h1 id="stationName">Radio Minutos Con Dios</h1>
+
+    <div class="controls" aria-label="Controles de reproducción">
+      <button class="control" id="btnPrev" title="Anterior">⏮</button>
+      <button class="control" id="btnPlay" title="Reproducir">▶️</button>
+      <button class="control" id="btnNext" title="Siguiente">⏭</button>
+    </div>
+
+    <div class="bars" id="bars" aria-label="Ecualizador visual"></div>
+
+    <audio id="audio" crossorigin="anonymous"></audio>
+  </div>
+
+  <div class="bg-input">
+    <input type="text" id="bgUrl" placeholder="Pega URL de fondo aquí" aria-label="URL del fondo de pantalla" />
+    <button id="applyBg">Aplicar fondo</button>
+  </div>
+
+  <script>
+    const audio = document.getElementById('audio');
+    const btnPlay = document.getElementById('btnPlay');
+    const btnPrev = document.getElementById('btnPrev');
+    const btnNext = document.getElementById('btnNext');
+    const barsContainer = document.getElementById('bars');
+    const stationName = document.getElementById('stationName');
+    const bgUrlInput = document.getElementById('bgUrl');
+    const applyBgBtn = document.getElementById('applyBg');
+    const logoImg = document.getElementById('logoImg');
+
+    // Puedes cambiar aquí el logo si quieres:
+//    logoImg.src = "https://tu-url-de-logo.png";
+
+    const BARS_COUNT = 40;
+    let playlist = [
+      { name: "Minutos Con Dios ", url: "https://stream-176.zeno.fm/ix1tdnufcj5vv?zt=eyJhbGciOiJIUzI1NiJ9.eyJzdHJlYW0iOiJpeDF0ZG51ZmNqNXZ2IiwiaG9zdCI6InN0cmVhbS0xNzYuemVuby5mbSIsInJ0dGwiOjUsImp0aSI6IjJzOWlaaHF3U1FtZmUzbjRfUmtDalEiLCJpYXQiOjE3NTQ3NzI5NjMsImV4cCI6MTc1NDc3MzAyM30.qVZmQo6xfhyCxLALU_IYYekfr0b1mKdkyZ_CxakGiMo" }
+    ];
+    let currentIndex = 0;
+    let audioCtx, sourceNode, analyser, dataArray, animationId;
+
+    function createBars(){
+      barsContainer.innerHTML = '';
+      for(let i=0; i<BARS_COUNT; i++){
+        const bar = document.createElement('div');
+        bar.className = 'bar';
+        barsContainer.appendChild(bar);
+      }
+    }
+    createBars();
+
+    function ensureAudioContext(){
+      if(audioCtx) return;
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      sourceNode = audioCtx.createMediaElementSource(audio);
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      const bufferLength = analyser.frequencyBinCount;
+      dataArray = new Uint8Array(bufferLength);
+      sourceNode.connect(analyser);
+      analyser.connect(audioCtx.destination);
+    }
+
+    function startVisualizer(){
+      const bars = Array.from(document.querySelectorAll('.bar'));
+      function render(){
+        analyser.getByteFrequencyData(dataArray);
+        const step = Math.floor(dataArray.length / bars.length);
+        for(let i=0; i<bars.length; i++){
+          let value = 0;
+          for(let j=0; j<step; j++) value += dataArray[i*step + j] || 0;
+          value = value / step;
+          const h = Math.max(6, Math.min(160, (value/255)*140));
+          bars[i].style.height = h + 'px';
+          // Color gradient bar by bar:
+          bars[i].style.background = `hsl(${(i*360/bars.length)}, 90%, 60%)`;
+        }
+        animationId = requestAnimationFrame(render);
+      }
+      cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(render);
+    }
+
+    function loadTrack(i){
+      if(i < 0 || i >= playlist.length) return;
+      currentIndex = i;
+      audio.src = playlist[i].url;
+      stationName.textContent = playlist[i].name;
+    }
+
+    btnPlay.addEventListener('click', async () => {
+      if(audio.paused){
+        try{
+          ensureAudioContext();
+          if(audioCtx.state === 'suspended') await audioCtx.resume();
+          await audio.play();
+          btnPlay.textContent = '⏸';
+          startVisualizer();
+        } catch(e){
+          console.error(e);
+        }
+      } else {
+        audio.pause();
+        btnPlay.textContent = '▶️';
+        cancelAnimationFrame(animationId);
+      }
+    });
+
+    btnPrev.addEventListener('click', () => {
+      loadTrack((currentIndex - 1 + playlist.length) % playlist.length);
+      audio.play();
+      btnPlay.textContent = '⏸';
+      startVisualizer();
+    });
+    btnNext.addEventListener('click', () => {
+      loadTrack((currentIndex + 1) % playlist.length);
+      audio.play();
+      btnPlay.textContent = '⏸';
+      startVisualizer();
+    });
+
+    applyBgBtn.addEventListener('click', () => {
+      const url = bgUrlInput.value.trim();
+      if(!url) {
+        alert("Por favor, ingresa una URL válida para el fondo.");
+        return;
+      }
+      document.body.style.backgroundImage = `url('${url}')`;
+    });
+
+    // Inicializar reproductor
+    loadTrack(currentIndex);
+  </script>
+</body>
+</html>
+
